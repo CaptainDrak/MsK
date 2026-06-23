@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { supabase, isConfigured } from './supabase'
 import BookGrid from './components/BookGrid'
 import BookModal from './components/BookModal'
@@ -154,6 +155,7 @@ export default function App() {
           onDone={() => setToast(null)}
         />
       )}
+      <Analytics />
     </div>
   )
 }

@@ -28,7 +28,7 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   }, [])
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-2xl overflow-hidden w-full max-w-sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <h2 className="font-bold text-gray-800">Scan Barcode</h2>

@@ -15,25 +15,35 @@ const EMPTY_FORM = {
   notes: '',
 }
 
+const GOOGLE_BOOKS_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY
+
+function parseGoogleBook(item) {
+  const info = item?.volumeInfo || {}
+  const title = info.title || ''
+  const author = info.authors?.[0] || ''
+  const isbn = info.industryIdentifiers?.find(i => i.type === 'ISBN_13')?.identifier
+    || info.industryIdentifiers?.find(i => i.type === 'ISBN_10')?.identifier
+    || ''
+  const coverUrl = info.imageLinks?.thumbnail?.replace('http://', 'https://') || ''
+  return { title, author, isbn, coverUrl }
+}
+
 async function fetchBookByISBN(isbn) {
-  const res = await fetch(`https://openlibrary.org/isbn/${isbn.trim()}.json`)
-  if (!res.ok) throw new Error(`ISBN not found in Open Library (${res.status})`)
+  const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn.trim()}&key=${GOOGLE_BOOKS_KEY}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Google Books returned ${res.status}. Try again later.`)
   const data = await res.json()
+  if (!data.items?.length) throw new Error('ISBN not found in Google Books.')
+  return parseGoogleBook(data.items[0])
+}
 
-  const title = data.title || ''
-  const coverId = data.covers?.[0]
-  const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : ''
-
-  let author = ''
-  if (data.authors?.length) {
-    const authorRes = await fetch(`https://openlibrary.org${data.authors[0].key}.json`)
-    if (authorRes.ok) {
-      const authorData = await authorRes.json()
-      author = authorData.name || ''
-    }
-  }
-
-  return { title, author, coverUrl }
+async function fetchBookByTitle(title) {
+  const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=1&key=${GOOGLE_BOOKS_KEY}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Google Books returned ${res.status}. Try again later.`)
+  const data = await res.json()
+  if (!data.items?.length) throw new Error('No results found for that title.')
+  return parseGoogleBook(data.items[0])
 }
 
 export default function BookModal({ book, userId, onClose, onSaved }) {
@@ -107,21 +117,12 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
     setLookingUp(true)
     setError('')
     try {
-      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(form.title)}&limit=1`)
-      if (!res.ok) throw new Error(`Open Library returned ${res.status}. Try again later.`)
-      const data = await res.json()
-      const doc = data.docs?.[0]
-      if (!doc) throw new Error('No results found for that title.')
-
-      const coverId = doc.cover_i
-      const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : ''
-      const author = doc.author_name?.[0] || ''
-
+      const { author, isbn, coverUrl } = await fetchBookByTitle(form.title)
       setForm(f => ({
         ...f,
         author: author || f.author,
         cover_url: coverUrl || f.cover_url,
-        isbn: doc.isbn?.[0] || f.isbn,
+        isbn: isbn || f.isbn,
       }))
     } catch (err) {
       setError(err.message)

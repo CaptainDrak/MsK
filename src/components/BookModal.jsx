@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../supabase'
 import BarcodeScanner from './BarcodeScanner'
 import ISBNScanner from './ISBNScanner'
+import StarRating from './StarRating'
 
 const EMPTY_FORM = {
   title: '',
@@ -10,6 +11,7 @@ const EMPTY_FORM = {
   isbn: '',
   cover_url: '',
   read_status: 'unread',
+  rating: null,
   bookcase: '',
   location: '',
   notes: '',
@@ -340,6 +342,17 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
               <option value="in_progress">In Progress</option>
               <option value="read">Read</option>
             </select>
+          </div>
+
+          {/* Rating */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">Rating</label>
+            <StarRating value={form.rating} onChange={val => set('rating', val)} />
+            {form.rating && (
+              <button type="button" onClick={() => set('rating', null)} className="text-xs text-gray-400 hover:text-gray-600 mt-1 cursor-pointer">
+                Clear rating
+              </button>
+            )}
           </div>
 
           {/* Location */}

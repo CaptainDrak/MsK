@@ -1,3 +1,5 @@
+import StarRating from './StarRating'
+
 const STATUS_LABELS = {
   read: { label: 'Read', color: 'bg-green-100 text-green-800' },
   in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800' },
@@ -55,6 +57,7 @@ function BookCard({ book, onEdit, onDelete }) {
           <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium self-start ${status.color}`}>
             {status.label}
           </span>
+          {book.rating && <StarRating value={book.rating} readOnly />}
           {book.bookcase && (
             <p className="text-xs truncate" style={{ color: 'var(--t-accent)' }}>
               {book.bookcase}{book.location ? ` · ${book.location}` : ''}

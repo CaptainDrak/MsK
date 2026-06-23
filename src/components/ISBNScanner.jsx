@@ -113,7 +113,8 @@ export default function ISBNScanner({ onDetected, onClose }) {
               <button
                 onClick={capture}
                 disabled={status !== 'ready'}
-                className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer"
+                className="disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer"
+              style={{ background: 'var(--t-btn)' }}
               >
                 {status === 'scanning' ? 'Reading...' : 'Capture'}
               </button>

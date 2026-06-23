@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase, isConfigured } from './supabase'
-
 import BookGrid from './components/BookGrid'
 import BookModal from './components/BookModal'
 import FilterBar from './components/FilterBar'
 import Toast from './components/Toast'
+import ThemePicker from './components/ThemePicker'
+import { useTheme } from './hooks/useTheme'
 
 export default function App({ session }) {
   const [books, setBooks] = useState([])
@@ -16,6 +17,7 @@ export default function App({ session }) {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterBookcase, setFilterBookcase] = useState('all')
   const [toast, setToast] = useState(null)
+  const { themeId, setThemeId } = useTheme()
 
   useEffect(() => {
     if (isConfigured) fetchBooks()
@@ -88,22 +90,29 @@ export default function App({ session }) {
   })
 
   return (
-    <div className="min-h-screen bg-amber-50">
-      <header className="bg-amber-900 text-amber-50 px-6 py-4 shadow-md flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: 'var(--t-page)' }}>
+      <header className="px-6 py-4 shadow-md flex items-center justify-between" style={{ background: 'var(--t-hdr)' }}>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ms. K's Library</h1>
-          <p className="text-amber-300 text-sm mt-0.5">{books.length} book{books.length !== 1 ? 's' : ''} in collection</p>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--t-hdr-text)' }}>Ms. K's Library</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--t-hdr-sub)' }}>{books.length} book{books.length !== 1 ? 's' : ''} in collection</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={openAdd}
-            className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            className="font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            style={{ background: 'var(--t-btn)', color: 'var(--t-btn-text)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--t-btn-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--t-btn)'}
           >
             + Add Book
           </button>
+          <ThemePicker themeId={themeId} onThemeChange={setThemeId} />
           <button
             onClick={() => supabase.auth.signOut()}
-            className="text-amber-300 hover:text-amber-100 text-sm cursor-pointer"
+            className="text-sm cursor-pointer transition-colors"
+            style={{ color: 'var(--t-hdr-sub)' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--t-hdr-text)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--t-hdr-sub)'}
             title={`Signed in as ${session.user.email}`}
           >
             Sign Out
@@ -112,8 +121,8 @@ export default function App({ session }) {
       </header>
 
       {!isConfigured && (
-        <div className="bg-amber-100 border-b border-amber-300 px-6 py-3 text-amber-800 text-sm">
-          <strong>Setup required:</strong> Add your Supabase URL and anon key to <code className="bg-amber-200 px-1 rounded">.env.local</code>, then restart the dev server.
+        <div className="px-6 py-3 text-sm border-b" style={{ background: 'var(--t-banner-bg)', borderColor: 'var(--t-banner-border)', color: 'var(--t-banner-text)' }}>
+          <strong>Setup required:</strong> Add your Supabase URL and anon key to <code className="px-1 rounded" style={{ background: 'var(--t-btn2)' }}>.env.local</code>, then restart the dev server.
         </div>
       )}
 
@@ -129,19 +138,20 @@ export default function App({ session }) {
         />
 
         {loading ? (
-          <div className="text-center py-20 text-amber-700">Loading your collection...</div>
+          <div className="text-center py-20" style={{ color: 'var(--t-accent)' }}>Loading your collection...</div>
         ) : fetchError ? (
           <div className="text-center py-20">
             <p className="text-red-600 mb-4">{fetchError}</p>
             <button
               onClick={fetchBooks}
-              className="bg-amber-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-amber-600 cursor-pointer"
+              className="text-white font-semibold px-4 py-2 rounded-lg cursor-pointer"
+              style={{ background: 'var(--t-btn)' }}
             >
               Try again
             </button>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-amber-700">
+          <div className="text-center py-20" style={{ color: 'var(--t-accent)' }}>
             {books.length === 0 ? 'No books yet — add your first one!' : 'No books match your filters.'}
           </div>
         ) : (

@@ -1,4 +1,6 @@
 export default function FilterBar({ search, onSearch, filterStatus, onFilterStatus, filterBookcase, onFilterBookcase, bookcases }) {
+  const inputClass = "border rounded-lg px-3 py-2 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2"
+
   return (
     <div className="flex flex-wrap gap-3 mb-6">
       <input
@@ -6,12 +8,14 @@ export default function FilterBar({ search, onSearch, filterStatus, onFilterStat
         placeholder="Search title, author, genre..."
         value={search}
         onChange={e => onSearch(e.target.value)}
-        className="flex-1 min-w-48 border border-amber-300 rounded-lg px-3 py-2 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className={`flex-1 min-w-48 ${inputClass}`}
+        style={{ borderColor: 'var(--t-card-border)', '--tw-ring-color': 'var(--t-ring)' }}
       />
       <select
         value={filterStatus}
         onChange={e => onFilterStatus(e.target.value)}
-        className="border border-amber-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className={inputClass}
+        style={{ borderColor: 'var(--t-card-border)', '--tw-ring-color': 'var(--t-ring)', color: '#374151' }}
       >
         <option value="all">All statuses</option>
         <option value="unread">Unread</option>
@@ -21,7 +25,8 @@ export default function FilterBar({ search, onSearch, filterStatus, onFilterStat
       <select
         value={filterBookcase}
         onChange={e => onFilterBookcase(e.target.value)}
-        className="border border-amber-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className={inputClass}
+        style={{ borderColor: 'var(--t-card-border)', '--tw-ring-color': 'var(--t-ring)', color: '#374151' }}
       >
         <option value="all">All bookcases</option>
         {bookcases.map(bc => (

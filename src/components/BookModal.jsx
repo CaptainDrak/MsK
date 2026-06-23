@@ -187,13 +187,14 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                 value={form.isbn}
                 onChange={e => set('isbn', e.target.value)}
                 placeholder="e.g. 9780743273565"
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
               />
               <div className="relative" ref={scanMenuRef}>
                 <button
                   type="button"
                   onClick={() => setShowScanMenu(v => !v)}
-                  className="bg-amber-700 text-white text-sm font-semibold px-3 py-2 rounded-lg hover:bg-amber-600 transition-colors cursor-pointer"
+                  className="text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                  style={{ background: 'var(--t-btn)' }}
                   title="Scan with camera"
                 >
                   📷
@@ -203,14 +204,14 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                     <button
                       type="button"
                       onClick={() => { setScanning('barcode'); setShowScanMenu(false) }}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 cursor-pointer border-b border-gray-100"
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 cursor-pointer border-b border-gray-100 hover:bg-gray-50"
                     >
                       🔲 Scan Barcode
                     </button>
                     <button
                       type="button"
                       onClick={() => { setScanning('isbn'); setShowScanMenu(false) }}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 cursor-pointer"
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 cursor-pointer hover:bg-gray-50"
                     >
                       🔢 Scan ISBN Text
                     </button>
@@ -221,7 +222,8 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                 type="button"
                 onClick={lookupISBN}
                 disabled={lookingUp || !form.isbn.trim()}
-                className="bg-amber-100 text-amber-800 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-amber-200 disabled:opacity-50 transition-colors cursor-pointer"
+                className="text-sm font-semibold px-3 py-2 rounded-lg disabled:opacity-50 transition-colors cursor-pointer"
+                style={{ background: 'var(--t-btn2)', color: 'var(--t-btn2-text)' }}
               >
                 {lookingUp ? '...' : 'Lookup'}
               </button>
@@ -237,13 +239,14 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                 value={form.title}
                 onChange={e => set('title', e.target.value)}
                 required
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
               />
               <button
                 type="button"
                 onClick={lookupTitle}
                 disabled={lookingUp || !form.title.trim()}
-                className="bg-amber-100 text-amber-800 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-amber-200 disabled:opacity-50 transition-colors cursor-pointer"
+                className="text-sm font-semibold px-3 py-2 rounded-lg disabled:opacity-50 transition-colors cursor-pointer"
+                style={{ background: 'var(--t-btn2)', color: 'var(--t-btn2-text)' }}
               >
                 {lookingUp ? '...' : 'Lookup'}
               </button>
@@ -257,7 +260,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
               type="text"
               value={form.author}
               onChange={e => set('author', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
             />
           </div>
 
@@ -267,7 +270,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
             <select
               value={form.genre}
               onChange={e => set('genre', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 text-gray-700"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)] text-gray-700"
             >
               <option value="">— Select a genre —</option>
               <optgroup label="Fiction">
@@ -316,7 +319,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                 value={form.cover_url}
                 onChange={e => set('cover_url', e.target.value)}
                 placeholder="Auto-filled by lookup, or paste a URL"
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
               />
               {form.cover_url && (
                 <img src={form.cover_url} alt="Cover preview" className="w-12 h-16 object-cover rounded border border-gray-200" />
@@ -330,7 +333,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
             <select
               value={form.read_status}
               onChange={e => set('read_status', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
             >
               <option value="unread">Unread</option>
               <option value="in_progress">In Progress</option>
@@ -347,7 +350,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                 value={form.bookcase}
                 onChange={e => set('bookcase', e.target.value)}
                 placeholder="e.g. Living Room"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
               />
             </div>
             <div>
@@ -357,7 +360,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
                 value={form.location}
                 onChange={e => set('location', e.target.value)}
                 placeholder="e.g. Top shelf"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)]"
               />
             </div>
           </div>
@@ -369,7 +372,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
               rows={3}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--t-ring)] resize-none"
             />
           </div>
 
@@ -390,7 +393,8 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
             <button
               type="submit"
               disabled={saving}
-              className="bg-amber-700 hover:bg-amber-600 text-white font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+              className="text-white font-semibold px-5 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+              style={{ background: 'var(--t-btn)' }}
             >
               {saving ? 'Saving...' : isNew ? 'Add Book' : 'Save Changes'}
             </button>

@@ -25,17 +25,14 @@ function BookCard({ book, onEdit, onDelete }) {
   return (
     <div
       onClick={() => onEdit(book)}
-      className="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow cursor-pointer"
+      className="rounded-xl shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow cursor-pointer border"
+      style={{ background: 'var(--t-card)', borderColor: 'var(--t-card-border)' }}
     >
-      <div className="relative aspect-[2/3] bg-amber-100">
+      <div className="relative aspect-[2/3] bg-gray-100">
         {book.cover_url ? (
-          <img
-            src={book.cover_url}
-            alt={book.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-amber-300">
+          <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--t-card-border)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
@@ -59,7 +56,9 @@ function BookCard({ book, onEdit, onDelete }) {
             {status.label}
           </span>
           {book.bookcase && (
-            <p className="text-xs text-amber-700 truncate">{book.bookcase}{book.location ? ` · ${book.location}` : ''}</p>
+            <p className="text-xs truncate" style={{ color: 'var(--t-accent)' }}>
+              {book.bookcase}{book.location ? ` · ${book.location}` : ''}
+            </p>
           )}
         </div>
       </div>

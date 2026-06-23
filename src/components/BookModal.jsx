@@ -264,12 +264,47 @@ export default function BookModal({ book, onClose, onSaved }) {
           {/* Genre */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Genre</label>
-            <input
-              type="text"
+            <select
               value={form.genre}
               onChange={e => set('genre', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 text-gray-700"
+            >
+              <option value="">— Select a genre —</option>
+              <optgroup label="Fiction">
+                <option>Literary Fiction</option>
+                <option>Science Fiction</option>
+                <option>Fantasy</option>
+                <option>Mystery / Thriller</option>
+                <option>Weird Fiction</option>
+                <option>Horror</option>
+                <option>Romance</option>
+                <option>Historical Fiction</option>
+                <option>Adventure</option>
+                <option>Graphic Novel / Comics</option>
+              </optgroup>
+              <optgroup label="Non-Fiction">
+                <option>Biography / Memoir</option>
+                <option>History</option>
+                <option>Science & Nature</option>
+                <option>Self-Help / Personal Development</option>
+                <option>Philosophy</option>
+                <option>Psychology</option>
+                <option>Politics & Society</option>
+                <option>Business & Economics</option>
+                <option>Travel</option>
+                <option>True Crime</option>
+                <option>Religion & Spirituality</option>
+                <option>Art & Photography</option>
+                <option>Cooking & Food</option>
+                <option>Health & Fitness</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option>Poetry</option>
+                <option>Drama / Plays</option>
+                <option>Children's</option>
+                <option>Reference / Textbooks</option>
+              </optgroup>
+            </select>
           </div>
 
           {/* Cover URL */}

@@ -150,12 +150,12 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
     }
   }
 
-  function applyResync(incoming) {
+  function applyResync(incoming, selected) {
     setForm(f => ({
       ...f,
-      title: incoming.title || f.title,
-      author: incoming.author || f.author,
-      cover_url: incoming.coverUrl || f.cover_url,
+      ...(selected.title    && incoming.title    ? { title:     incoming.title }    : {}),
+      ...(selected.author   && incoming.author   ? { author:    incoming.author }   : {}),
+      ...(selected.coverUrl && incoming.coverUrl ? { cover_url: incoming.coverUrl } : {}),
     }))
     setResyncData(null)
   }
@@ -192,7 +192,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
       <ResyncPreview
         current={form}
         incoming={resyncData}
-        onConfirm={() => applyResync(resyncData)}
+        onConfirm={(incoming, selected) => applyResync(incoming, selected)}
         onCancel={() => setResyncData(null)}
       />
     )}

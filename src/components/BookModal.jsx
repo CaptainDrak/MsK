@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import BarcodeScanner from './BarcodeScanner'
 import ISBNScanner from './ISBNScanner'
 import StarRating from './StarRating'
+import ResyncPreview from './ResyncPreview'
 
 const EMPTY_FORM = {
   title: '',
@@ -54,6 +55,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
   const [lookingUp, setLookingUp] = useState(false)
   const [error, setError] = useState('')
   const [scanning, setScanning] = useState(false) // 'barcode' | 'isbn' | false
+  const [resyncData, setResyncData] = useState(null)
   const [showScanMenu, setShowScanMenu] = useState(false)
   const scanMenuRef = useRef(null)
 
@@ -139,18 +141,23 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
     setLookingUp(true)
     setError('')
     try {
-      const { title, author, coverUrl } = await fetchBookByISBN(form.isbn)
-      setForm(f => ({
-        ...f,
-        title: title || f.title,
-        author: author || f.author,
-        cover_url: coverUrl || f.cover_url,
-      }))
+      const incoming = await fetchBookByISBN(form.isbn)
+      setResyncData(incoming)
     } catch (err) {
       setError(`Resync failed: ${err.message}`)
     } finally {
       setLookingUp(false)
     }
+  }
+
+  function applyResync(incoming) {
+    setForm(f => ({
+      ...f,
+      title: incoming.title || f.title,
+      author: incoming.author || f.author,
+      cover_url: incoming.coverUrl || f.cover_url,
+    }))
+    setResyncData(null)
   }
 
   async function handleSubmit(e) {
@@ -181,6 +188,14 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
 
   return (
     <>
+    {resyncData && (
+      <ResyncPreview
+        current={form}
+        incoming={resyncData}
+        onConfirm={() => applyResync(resyncData)}
+        onCancel={() => setResyncData(null)}
+      />
+    )}
     {scanning === 'barcode' && (
       <BarcodeScanner
         onDetected={handleScanned}

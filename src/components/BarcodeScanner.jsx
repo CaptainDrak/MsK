@@ -4,6 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode'
 export default function BarcodeScanner({ onDetected, onClose }) {
   const [error, setError] = useState('')
   const scannerRef = useRef(null)
+  const detectedRef = useRef(false)
   const divId = 'barcode-scanner-div'
 
   useEffect(() => {
@@ -14,16 +15,21 @@ export default function BarcodeScanner({ onDetected, onClose }) {
       { facingMode: 'environment' },
       { fps: 10, qrbox: { width: 280, height: 140 } },
       (decodedText) => {
-        scanner.stop().catch(() => {})
-        onDetected(decodedText)
+        if (detectedRef.current) return
+        detectedRef.current = true
+        scanner.stop()
+          .catch(() => {})
+          .finally(() => onDetected(decodedText))
       },
       () => {}
-    ).catch(err => {
+    ).catch(() => {
       setError('Camera access denied. Please allow camera permission and try again.')
     })
 
     return () => {
-      scanner.stop().catch(() => {})
+      if (!detectedRef.current) {
+        scanner.stop().catch(() => {})
+      }
     }
   }, [])
 

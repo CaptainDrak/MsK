@@ -14,6 +14,27 @@ const EMPTY_FORM = {
   notes: '',
 }
 
+async function fetchBookByISBN(isbn) {
+  const res = await fetch(`https://openlibrary.org/isbn/${isbn.trim()}.json`)
+  if (!res.ok) throw new Error(`ISBN not found in Open Library (${res.status})`)
+  const data = await res.json()
+
+  const title = data.title || ''
+  const coverId = data.covers?.[0]
+  const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : ''
+
+  let author = ''
+  if (data.authors?.length) {
+    const authorRes = await fetch(`https://openlibrary.org${data.authors[0].key}.json`)
+    if (authorRes.ok) {
+      const authorData = await authorRes.json()
+      author = authorData.name || ''
+    }
+  }
+
+  return { title, author, coverUrl }
+}
+
 export default function BookModal({ book, onClose, onSaved }) {
   const [form, setForm] = useState(book ? { ...EMPTY_FORM, ...book } : { ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
@@ -33,20 +54,7 @@ export default function BookModal({ book, onClose, onSaved }) {
     setLookingUp(true)
     setError('')
     try {
-      const res = await fetch(`https://openlibrary.org/isbn/${isbn.trim()}.json`)
-      if (!res.ok) throw new Error('Not found')
-      const data = await res.json()
-      const title = data.title || ''
-      const coverId = data.covers?.[0]
-      const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : ''
-      let author = ''
-      if (data.authors?.length) {
-        const authorRes = await fetch(`https://openlibrary.org${data.authors[0].key}.json`)
-        if (authorRes.ok) {
-          const authorData = await authorRes.json()
-          author = authorData.name || ''
-        }
-      }
+      const { title, author, coverUrl } = await fetchBookByISBN(isbn)
       setForm(f => ({
         ...f,
         isbn,
@@ -54,10 +62,11 @@ export default function BookModal({ book, onClose, onSaved }) {
         author: author || f.author,
         cover_url: coverUrl || f.cover_url,
       }))
-    } catch {
-      setError('ISBN scanned but not found in Open Library. Fill in details manually.')
+    } catch (err) {
+      setError(`Scan succeeded but lookup failed: ${err.message}. You can fill in details manually.`)
+    } finally {
+      setLookingUp(false)
     }
-    setLookingUp(false)
   }
 
   async function lookupISBN() {
@@ -65,33 +74,18 @@ export default function BookModal({ book, onClose, onSaved }) {
     setLookingUp(true)
     setError('')
     try {
-      const res = await fetch(`https://openlibrary.org/isbn/${form.isbn.trim()}.json`)
-      if (!res.ok) throw new Error('Not found')
-      const data = await res.json()
-
-      const title = data.title || ''
-      const coverId = data.covers?.[0]
-      const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : ''
-
-      let author = ''
-      if (data.authors?.length) {
-        const authorRes = await fetch(`https://openlibrary.org${data.authors[0].key}.json`)
-        if (authorRes.ok) {
-          const authorData = await authorRes.json()
-          author = authorData.name || ''
-        }
-      }
-
+      const { title, author, coverUrl } = await fetchBookByISBN(form.isbn)
       setForm(f => ({
         ...f,
         title: title || f.title,
         author: author || f.author,
         cover_url: coverUrl || f.cover_url,
       }))
-    } catch {
-      setError('ISBN not found. Try entering details manually.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLookingUp(false)
     }
-    setLookingUp(false)
   }
 
   async function lookupTitle() {
@@ -100,9 +94,10 @@ export default function BookModal({ book, onClose, onSaved }) {
     setError('')
     try {
       const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(form.title)}&limit=1`)
+      if (!res.ok) throw new Error(`Open Library returned ${res.status}. Try again later.`)
       const data = await res.json()
       const doc = data.docs?.[0]
-      if (!doc) throw new Error('Not found')
+      if (!doc) throw new Error('No results found for that title.')
 
       const coverId = doc.cover_i
       const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : ''
@@ -114,10 +109,11 @@ export default function BookModal({ book, onClose, onSaved }) {
         cover_url: coverUrl || f.cover_url,
         isbn: doc.isbn?.[0] || f.isbn,
       }))
-    } catch {
-      setError('Title not found. Try entering details manually.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLookingUp(false)
     }
-    setLookingUp(false)
   }
 
   async function handleSubmit(e) {
@@ -130,20 +126,20 @@ export default function BookModal({ book, onClose, onSaved }) {
     delete payload.id
     delete payload.created_at
 
-    let result
-    if (isNew) {
-      result = await supabase.from('books').insert(payload).select().single()
-    } else {
-      result = await supabase.from('books').update(payload).eq('id', book.id).select().single()
-    }
-
-    if (result.error) {
-      setError(result.error.message)
+    try {
+      let result
+      if (isNew) {
+        result = await supabase.from('books').insert(payload).select().single()
+      } else {
+        result = await supabase.from('books').update(payload).eq('id', book.id).select().single()
+      }
+      if (result.error) throw result.error
+      onSaved(result.data, isNew)
+    } catch (err) {
+      setError(err.message || 'Failed to save. Please try again.')
+    } finally {
       setSaving(false)
-      return
     }
-
-    onSaved(result.data, isNew)
   }
 
   return (
@@ -302,7 +298,11 @@ export default function BookModal({ book, onClose, onSaved }) {
             />
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button

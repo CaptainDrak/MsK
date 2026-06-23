@@ -3,15 +3,18 @@ import { supabase, isConfigured } from './supabase'
 import BookGrid from './components/BookGrid'
 import BookModal from './components/BookModal'
 import FilterBar from './components/FilterBar'
+import Toast from './components/Toast'
 
 export default function App() {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(isConfigured)
+  const [fetchError, setFetchError] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingBook, setEditingBook] = useState(null)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterBookcase, setFilterBookcase] = useState('all')
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     if (isConfigured) fetchBooks()
@@ -19,12 +22,19 @@ export default function App() {
 
   async function fetchBooks() {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('books')
-      .select('*')
-      .order('title')
-    if (!error) setBooks(data)
-    setLoading(false)
+    setFetchError('')
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .order('title')
+      if (error) throw error
+      setBooks(data)
+    } catch (err) {
+      setFetchError(err.message || 'Failed to load books. Check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   function openAdd() {
@@ -39,8 +49,14 @@ export default function App() {
 
   async function deleteBook(id) {
     if (!confirm('Delete this book?')) return
-    await supabase.from('books').delete().eq('id', id)
-    setBooks(books.filter(b => b.id !== id))
+    try {
+      const { error } = await supabase.from('books').delete().eq('id', id)
+      if (error) throw error
+      setBooks(prev => prev.filter(b => b.id !== id))
+      showToast('Book deleted.')
+    } catch (err) {
+      showToast(err.message || 'Failed to delete book. Please try again.', 'error')
+    }
   }
 
   function onSaved(book, isNew) {
@@ -50,6 +66,11 @@ export default function App() {
       setBooks(prev => prev.map(b => b.id === book.id ? book : b))
     }
     setModalOpen(false)
+    showToast(isNew ? 'Book added!' : 'Book updated.')
+  }
+
+  function showToast(message, type = 'success') {
+    setToast({ message, type })
   }
 
   const bookcases = [...new Set(books.map(b => b.bookcase).filter(Boolean))].sort()
@@ -99,6 +120,16 @@ export default function App() {
 
         {loading ? (
           <div className="text-center py-20 text-amber-700">Loading your collection...</div>
+        ) : fetchError ? (
+          <div className="text-center py-20">
+            <p className="text-red-600 mb-4">{fetchError}</p>
+            <button
+              onClick={fetchBooks}
+              className="bg-amber-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-amber-600 cursor-pointer"
+            >
+              Try again
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-amber-700">
             {books.length === 0 ? 'No books yet — add your first one!' : 'No books match your filters.'}
@@ -113,6 +144,14 @@ export default function App() {
           book={editingBook}
           onClose={() => setModalOpen(false)}
           onSaved={onSaved}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDone={() => setToast(null)}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../supabase'
 import BarcodeScanner from './BarcodeScanner'
+import ISBNScanner from './ISBNScanner'
 
 const EMPTY_FORM = {
   title: '',
@@ -40,7 +41,20 @@ export default function BookModal({ book, onClose, onSaved }) {
   const [saving, setSaving] = useState(false)
   const [lookingUp, setLookingUp] = useState(false)
   const [error, setError] = useState('')
-  const [scanning, setScanning] = useState(false)
+  const [scanning, setScanning] = useState(false) // 'barcode' | 'isbn' | false
+  const [showScanMenu, setShowScanMenu] = useState(false)
+  const scanMenuRef = useRef(null)
+
+  useEffect(() => {
+    if (!showScanMenu) return
+    function handleClick(e) {
+      if (scanMenuRef.current && !scanMenuRef.current.contains(e.target)) {
+        setShowScanMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showScanMenu])
 
   const isNew = !book
 
@@ -144,8 +158,14 @@ export default function BookModal({ book, onClose, onSaved }) {
 
   return (
     <>
-    {scanning && (
+    {scanning === 'barcode' && (
       <BarcodeScanner
+        onDetected={handleScanned}
+        onClose={() => setScanning(false)}
+      />
+    )}
+    {scanning === 'isbn' && (
+      <ISBNScanner
         onDetected={handleScanned}
         onClose={() => setScanning(false)}
       />
@@ -169,14 +189,34 @@ export default function BookModal({ book, onClose, onSaved }) {
                 placeholder="e.g. 9780743273565"
                 className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
-              <button
-                type="button"
-                onClick={() => setScanning(true)}
-                className="bg-amber-700 text-white text-sm font-semibold px-3 py-2 rounded-lg hover:bg-amber-600 transition-colors cursor-pointer"
-                title="Scan barcode with camera"
-              >
-                📷
-              </button>
+              <div className="relative" ref={scanMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowScanMenu(v => !v)}
+                  className="bg-amber-700 text-white text-sm font-semibold px-3 py-2 rounded-lg hover:bg-amber-600 transition-colors cursor-pointer"
+                  title="Scan with camera"
+                >
+                  📷
+                </button>
+                {showScanMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden w-44">
+                    <button
+                      type="button"
+                      onClick={() => { setScanning('barcode'); setShowScanMenu(false) }}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 cursor-pointer border-b border-gray-100"
+                    >
+                      🔲 Scan Barcode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setScanning('isbn'); setShowScanMenu(false) }}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 cursor-pointer"
+                    >
+                      🔢 Scan ISBN Text
+                    </button>
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={lookupISBN}

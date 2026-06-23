@@ -133,6 +133,25 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
     }
   }
 
+  async function resync() {
+    if (!form.isbn.trim()) return
+    setLookingUp(true)
+    setError('')
+    try {
+      const { title, author, coverUrl } = await fetchBookByISBN(form.isbn)
+      setForm(f => ({
+        ...f,
+        title: title || f.title,
+        author: author || f.author,
+        cover_url: coverUrl || f.cover_url,
+      }))
+    } catch (err) {
+      setError(`Resync failed: ${err.message}`)
+    } finally {
+      setLookingUp(false)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.title.trim()) { setError('Title is required.'); return }
@@ -177,7 +196,21 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-800">{isNew ? 'Add Book' : 'Edit Book'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl cursor-pointer">✕</button>
+          <div className="flex items-center gap-3">
+            {!isNew && form.isbn && (
+              <button
+                type="button"
+                onClick={resync}
+                disabled={lookingUp}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors cursor-pointer"
+                style={{ background: 'var(--t-btn2)', color: 'var(--t-btn2-text)' }}
+                title="Re-fetch title, author, and cover from Google Books"
+              >
+                {lookingUp ? 'Syncing...' : '↻ Resync'}
+              </button>
+            )}
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl cursor-pointer">✕</button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-4 flex flex-col gap-4">

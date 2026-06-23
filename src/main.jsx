@@ -1,7 +1,9 @@
-import { StrictMode, Component } from 'react'
+import { StrictMode, Component, useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import AuthScreen from './components/AuthScreen.jsx'
+import { supabase, isConfigured } from './supabase.js'
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -37,10 +39,38 @@ class ErrorBoundary extends Component {
   }
 }
 
+function Root() {
+  const [session, setSession] = useState(undefined) // undefined = loading
+
+  useEffect(() => {
+    if (!isConfigured) { setSession(null); return }
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
+        <p className="text-amber-700">Loading...</p>
+      </div>
+    )
+  }
+
+  return session ? <App session={session} /> : <AuthScreen />
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <Root />
     </ErrorBoundary>
   </StrictMode>,
 )

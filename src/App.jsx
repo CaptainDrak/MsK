@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase, isConfigured } from './supabase'
+
 import BookGrid from './components/BookGrid'
 import BookModal from './components/BookModal'
 import FilterBar from './components/FilterBar'
 import Toast from './components/Toast'
 
-export default function App() {
+export default function App({ session }) {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(isConfigured)
   const [fetchError, setFetchError] = useState('')
@@ -93,12 +94,21 @@ export default function App() {
           <h1 className="text-2xl font-bold tracking-tight">Ms. K's Library</h1>
           <p className="text-amber-300 text-sm mt-0.5">{books.length} book{books.length !== 1 ? 's' : ''} in collection</p>
         </div>
-        <button
-          onClick={openAdd}
-          className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
-        >
-          + Add Book
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={openAdd}
+            className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+          >
+            + Add Book
+          </button>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-amber-300 hover:text-amber-100 text-sm cursor-pointer"
+            title={`Signed in as ${session.user.email}`}
+          >
+            Sign Out
+          </button>
+        </div>
       </header>
 
       {!isConfigured && (
@@ -142,6 +152,7 @@ export default function App() {
       {modalOpen && (
         <BookModal
           book={editingBook}
+          userId={session.user.id}
           onClose={() => setModalOpen(false)}
           onSaved={onSaved}
         />

@@ -36,7 +36,7 @@ async function fetchBookByISBN(isbn) {
   return { title, author, coverUrl }
 }
 
-export default function BookModal({ book, onClose, onSaved }) {
+export default function BookModal({ book, userId, onClose, onSaved }) {
   const [form, setForm] = useState(book ? { ...EMPTY_FORM, ...book } : { ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
   const [lookingUp, setLookingUp] = useState(false)
@@ -143,7 +143,7 @@ export default function BookModal({ book, onClose, onSaved }) {
     try {
       let result
       if (isNew) {
-        result = await supabase.from('books').insert(payload).select().single()
+        result = await supabase.from('books').insert({ ...payload, user_id: userId }).select().single()
       } else {
         result = await supabase.from('books').update(payload).eq('id', book.id).select().single()
       }

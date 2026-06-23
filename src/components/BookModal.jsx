@@ -135,6 +135,7 @@ export default function BookModal({ book, userId, onClose, onSaved }) {
 
   async function resync() {
     if (!form.isbn.trim()) return
+    if (!confirm('This will potentially reset the title, author and cover art for this book. Would you like to proceed?')) return
     setLookingUp(true)
     setError('')
     try {

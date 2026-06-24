@@ -76,6 +76,24 @@ export default function App({ session }) {
     setToast({ message, type })
   }
 
+  function exportCSV(booksToExport, filename) {
+    const headers = ['Title', 'Author', 'Genre', 'ISBN', 'Read Status', 'Rating', 'Bookcase', 'Location', 'Notes', 'Cover URL']
+    const rows = booksToExport.map(b => [
+      b.title, b.author, b.genre, b.isbn,
+      b.read_status, b.rating ?? '',
+      b.bookcase, b.location, b.notes, b.cover_url,
+    ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`))
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const bookcases = [...new Set(books.map(b => b.bookcase).filter(Boolean))].sort()
 
   const filtered = books.filter(book => {
@@ -135,6 +153,10 @@ export default function App({ session }) {
           filterBookcase={filterBookcase}
           onFilterBookcase={setFilterBookcase}
           bookcases={bookcases}
+          onExportAll={() => exportCSV(books, 'my-library.csv')}
+          onExportFiltered={() => exportCSV(filtered, 'my-library-filtered.csv')}
+          filteredCount={filtered.length}
+          totalCount={books.length}
         />
 
         {loading ? (
